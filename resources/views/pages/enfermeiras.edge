@@ -1,0 +1,240 @@
+@layout('layouts.main')
+
+@section('content')
+
+    <h1>Enfermeiras
+        <button style="float:top;" type="button" class="btn btn-success" data-toggle="modal" data-target="#modalEnfermeiraSalvar" data-id="0"><i class="fas fa-plus-square"></i></button>
+    </h1>
+
+    <table class="table table-bordered table-hover table-striped">
+        <thead class="thead-dark">
+            <th class="text-center">#</th>
+            <th>Nome</th>
+            <th>Hospital</th>
+            <th class="text-center">Ações</th>
+        </thead>
+
+        @if(enfermeiras.length > 0)
+            <tbody>
+                @each(enfermeira in enfermeiras)                
+                    <tr>
+                        <td class="text-center" style="width: 80px">{{ enfermeira.id }}</td>
+                        <td>{{ enfermeira.name }}</td>
+                        <td>{{ enfermeira.hospital.name }}</td>
+                        <td class="text-center" style="width: 130px">
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalEnfermeiraSalvar" data-id="{{ enfermeira.id }}" data-name="{{ enfermeira.name }}" data-hospital_id="{{ enfermeira.hospital.id }}">
+                                <i class="fas fa-edit fa-sm"></i>
+                            </button>
+                            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modalEnfermeiraExcluir" data-id="{{ enfermeira.id }}">
+                                <i class="far fa-trash-alt fa-sm"></i>
+                            </button>
+                        </td>
+                    </tr>                    
+                @endeach
+            </tbody>
+        @endif
+
+    </table>
+
+    <!-- Modal Enfermeira Salvar -->
+    <div class="modal fade" id="modalEnfermeiraSalvar" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <form onsubmit="return salvarEnfermeira()">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalEnfermeiraSalvarTitle"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="inputName" class="sr-only">Nome</label>
+                        <input type="text" id="inputName" class="form-control" placeholder="Nome" required autofocus maxlength="80">
+                        <select style="margin-top: 10px" class="form-control" id="selectHospitais" required>
+                            <option disabled selected value>Selecione um hospital...</option>
+                        </select>
+                        <input type="hidden" name="idHospital" id="inputId" value="0">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Enfermeira Excluir -->
+    <div class="modal fade" id="modalEnfermeiraExcluir" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEnfermeiraExcluirTitle">Deseja realmente excluir?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" name="idEnfermeira" id="inputIdExcluir" value="0">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Não</button>
+                <button type="button" class="btn btn-primary" onclick="excluirEnfermeira()">Sim</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        // Cria uma instancia padrão do axios, passando a URL base e o token
+        const instance = axios.create({
+            baseURL: 'http://127.0.0.1:3333/',
+            timeout: 1000,
+            headers: {'Authorization': 'Bearer ' + localStorage.getItem("token")}
+        })
+
+        // Valida o token no load do documento
+        window.addEventListener('load', function(event) {
+            instance.get("checkToken")
+            .then(function (res) {
+                console.log(res);
+            })
+            .catch(function (err) {
+                // Token inválido, redireciona para o login
+                window.location.replace("login");
+            });
+        })
+
+        // Evento com jQuery para quando o modal for aberto
+        $('#modalEnfermeiraSalvar').on('show.bs.modal', function (event) {
+            // Botão que acionou o modal
+            var button = $(event.relatedTarget);
+
+            // Extrai informação dos atributos data-*
+            var id = button.data('id');
+            var name = button.data('name');
+            var hospital_id = button.data('hospital_id');
+            
+            // Atualiza o conteúdo do modal com jQuery.
+            var modal = $(this);
+            var modalTitle = id == 0 ? "Nova Enfermeira" : "Atualizar Enfermeira";
+            
+            modal.find('#modalEnfermeiraSalvarTitle').text(modalTitle);
+            modal.find('#inputId').val(id);
+            modal.find('#inputName').val(name);
+
+            carregarSelectHospitais(hospital_id);
+        })
+
+        // Evento com jQuery para quando o modal for aberto
+        $('#modalEnfermeiraExcluir').on('show.bs.modal', function (event) {
+            // Botão que acionou o modal
+            var button = $(event.relatedTarget); 
+
+            // Extrai informação dos atributos data-*
+            var id = button.data('id');
+            
+            // Atualiza o conteúdo do modal com jQuery
+            var modal = $(this);
+            modal.find('#inputIdExcluir').val(id);
+        })
+
+        function salvarEnfermeira() {
+            // Extrai informação dos inputs
+            var id = document.getElementById("inputId").value;
+            var name = document.getElementById("inputName").value;
+            var hospital_id = document.getElementById("selectHospitais").value;
+
+            if(id == 0) {
+                // Faz uma requisição post na rota enfermeira e passa as informações dos inputs para criar uma nova enfermeira
+                instance.post('enfermeira', { "name": name, "hospital_id": hospital_id })
+                .then(function (res) {
+                    // Recarrega a página para atualizar as enfermeiras
+                    window.location.reload(true);
+                })
+                .catch(function (err) {
+                    if(err.request.status === 401) {
+                        // Token inválido, redireciona para o login
+                        window.location.replace("login");
+                    } else {
+                        var json = JSON.parse(err.response.request.response);
+                        alert(json.error.message);
+                    }
+                });
+            } else {
+                // Faz uma requisição put na rota enfermeira/id e passa as informações dos inputs para atualizar uma enfermeira
+                instance.put('enfermeira/'+id, { "name": name, "hospital_id": hospital_id })
+                .then(function (res) {
+                    // Recarrega a página para atualizar as enfermeiras
+                    window.location.reload(true);
+                })
+                .catch(function (err) {
+                    if(err.request.status === 401) {
+                        // Token inválido, redireciona para o login
+                        window.location.replace("login");
+                    } else {
+                        var json = JSON.parse(err.response.request.response);
+                        alert(json.error.message);
+                    }
+                });
+            }
+
+            return false;
+        }
+
+        function excluirEnfermeira() {
+            // Extrai informação dos inputs
+            var id = document.getElementById("inputIdExcluir").value;
+
+            // Faz uma requisição delete na rota enfermeira/id para excluir uma enfermeira
+            instance.delete('enfermeira/'+id)
+                .then(function (res) {
+                    // Recarrega a página para atualizar as enfermeiras
+                    window.location.reload(true);
+                })
+                .catch(function (err) {
+                    if(err.request.status === 401) {
+                        // Token inválido, redireciona para o login
+                        window.location.replace("login");
+                    } else {
+                        var json = JSON.parse(err.response.request.response);
+                        alert(json.error.message);
+                    }
+                });
+        }
+
+        function carregarSelectHospitais(hospital_id) {
+            // Faz uma requisição get na rota hospitais/todos para carregar um json com todos os hospitais
+            instance.get('hospitais/todos')
+            .then(function (res) {
+                var hospitais = res.data;
+                var selectHospitais = document.getElementById("selectHospitais"); 
+
+                // Faz um for em todos os hospitais para criar a lista de option de cada hospital no input select
+                for(var i = 0; i < hospitais.length; i++) {
+                    var hospital = hospitais[i];
+
+                    var option = document.createElement("option");
+                    option.textContent = hospital.name;
+                    option.value = hospital.id;
+                    selectHospitais.appendChild(option);
+
+                    // Seleciona o option quando for o id do hospital que estiver sendo editado
+                    if(hospital.id == hospital_id && hospital_id != 0) {
+                        option.selected = true;
+                    }
+                }
+            })
+            .catch(function (err) {
+                if(err.request.status === 401) {
+                    // Token inválido, redireciona para o login
+                    window.location.replace("login");
+                } else {
+                    var json = JSON.parse(err.response.request.response);
+                    alert(json.error.message);
+                }
+            });
+        }
+        
+    </script>
+
+@endsection

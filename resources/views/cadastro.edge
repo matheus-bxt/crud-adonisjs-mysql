@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="icon" href="/img/title-icon.png">
+        <title>Cadastro</title>
+
+        <!-- Axios -->
+        {{ script('/js/axios.min.js')}}
+
+        <!-- Principal CSS do Bootstrap -->
+        {{ style('/bootstrap/bootstrap.min.css') }}
+
+        <!-- Estilos customizados para esse template -->
+        {{ style('/css/login_cadastro.css') }}
+
+    </head>
+    <body class="text-center">
+        <form class="form-login" onsubmit="return cadastrar()" oninput='up2.setCustomValidity(up2.value != up.value ? "As senhas não conferem." : "")'>
+            <img class="mb-2" src="/img/login-icon.svg" alt="" width="120" height="120">
+            <h1 class="h3 mb-4 font-weight-large">Cadastro</h1>
+            <label for="inputUserName" class="sr-only">Nome de usuário</label>
+            <input type="text" id="inputUserName" class="form-control" placeholder="Nome de usuário" required autofocus>
+            <label for="inputEmail" class="sr-only">Endereço de email</label>
+            <input type="email" id="inputEmail" class="form-control" placeholder="E-mail" required>
+            <label for="inputPassword" class="sr-only">Senha</label>
+            <input type="password" id="inputPassword" class="form-control" placeholder="Senha" required name=up>
+            <label for="inputPasswordConfirm" class="sr-only">Confirmar Senha</label>
+            <input type="password" id="inputPasswordConfirm" class="form-control" placeholder="Confirmar Senha" name=up2>
+            <button class="btn btn-lg btn-primary btn-block" id="btnCadastrar" type="submit">Cadastrar</button>
+        </form>
+    
+        <script>
+
+            // Cria uma instancia padrão do axios, passando a URL base e o token
+            const instance = axios.create({
+                baseURL: 'http://127.0.0.1:3333/',
+                timeout: 1000,
+                headers: {'Authorization': 'Bearer ' + localStorage.getItem("token")}
+            });
+
+            function cadastrar() {
+                // Extrai informação dos inputs
+                var userName = document.getElementById("inputUserName").value;
+                var email = document.getElementById("inputEmail").value;
+                var password = document.getElementById("inputPassword").value;
+
+                // Faz uma requisição post na rota register e passa as informações dos inputs para fazer o cadastro do novo usuário
+                instance.post("register", { "username": userName, "email": email, "password": password })
+                .then(function (res) {
+                    // Dispara um alert e redireciona para o login
+                    alert("Usuário cadastrado com sucesso!");
+                    window.location.replace("login");
+                })
+                .catch(function (err) {
+                    var json = JSON.parse(err.response.request.response);
+                    alert(json.error.message);
+                });
+
+                return false;
+            }
+
+        </script>        
+    </body>
+</html>

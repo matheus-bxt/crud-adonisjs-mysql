@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="icon" href="/img/title-icon.png">
+        <title>Login</title>
+
+        <!-- Axios -->
+        {{ script('/js/axios.min.js')}}
+
+        <!-- Principal CSS do Bootstrap -->
+        {{ style('/bootstrap/bootstrap.min.css') }}
+
+        <!-- Estilos customizados para esse template -->
+        {{ style('/css/login_cadastro.css') }}
+
+    </head>
+    <body class="text-center">
+        <form class="form-login" onsubmit="return logar()">
+            <img class="mb-2" src="/img/login-icon.svg" alt="" width="120" height="120">
+            <h1 class="h3 mb-4 font-weight-large">Faça o login</h1>
+            <label for="inputEmail" class="sr-only">Endereço de email</label>
+            <input type="email" id="inputEmail" class="form-control" placeholder="E-mail" required autofocus>
+            <label for="inputPassword" class="sr-only">Senha</label>
+            <input type="password" id="inputPassword" class="form-control" placeholder="Senha" required>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+            <p></p>
+            <a href="cadastrar">Ainda não é cadastrado?</a>
+            <p class="mt-5 mb-3 text-muted">&copy; 2019</p>
+        </form>
+
+        <script>
+
+            // Cria uma instancia padrão do axios, passando a URL base e o token
+            const instance = axios.create({
+                baseURL: 'http://127.0.0.1:3333/',
+                timeout: 1000,
+                headers: {'Authorization': 'Bearer ' + localStorage.getItem("token")}
+            });
+
+            // Limpa o token do localStorage no load do documento
+            window.addEventListener('load', function() {
+                localStorage.clear();
+            });
+
+            function logar() {
+                // Extrai informação dos inputs
+                var email = document.getElementById("inputEmail").value;
+                var password = document.getElementById("inputPassword").value;
+
+                // Faz uma requisição post na rota authenticate e passa as informações dos inputs para autenticar o usuário e obter o token
+                instance.post("authenticate", { "email": email, "password": password })
+                .then(function (res) {
+                    // Seta o token no localStorage e redireciona para a página principal
+                    localStorage.setItem("token", res.data.token);
+                    window.location.href = "/";
+                })
+                .catch(function (err) {
+                    var json = JSON.parse(err.response.request.response);
+                    alert(json.error.message);
+                });
+
+                return false;
+            }
+
+        </script>
+    </body>
+</html>

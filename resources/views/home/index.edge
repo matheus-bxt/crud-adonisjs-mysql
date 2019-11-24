@@ -1,0 +1,38 @@
+@layout('layouts.main')
+
+@section('content')
+
+    <h1>Bem vindo ao CRUD Hospitais e Enfermeiras</h1>
+    <div class="container">
+        <h4>Aqui você pode cadastrar vários hospitais e várias enfermeiras:</h4>
+        <br>
+        <ul>
+            <li><p>Cada hospital pode ter várias enfermeiras</p></li>
+            <li><p>Cada enfermeira pode estar em apenas um hospital</p></li>
+        </ul>
+    </div>
+
+    <script>
+
+        // Cria uma instancia padrão do axios, passando a URL base e o token
+        const instance = axios.create({
+            baseURL: 'http://127.0.0.1:3333/',
+            timeout: 1000,
+            headers: {'Authorization': 'Bearer ' + localStorage.getItem("token")}
+        });
+
+        // Valida o token no load do documento
+        window.addEventListener('load', function(event) {
+            instance.get("checkToken")
+            .then(function (res) {
+                console.log(res);
+            })
+            .catch(function (err) {
+                // Token inválido, redireciona para o login
+                window.location.replace("login");
+            });
+        })
+
+    </script>
+
+@endsection

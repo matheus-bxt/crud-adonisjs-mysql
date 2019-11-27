@@ -125,6 +125,10 @@
             carregarSelectHospitais(hospital_id);
         })
 
+        $('#modalEnfermeiraSalvar').on('hidden.bs.modal', function () {
+            window.location.reload(true);
+        })
+
         // Evento com jQuery para quando o modal for aberto
         $('#modalEnfermeiraExcluir').on('show.bs.modal', function (event) {
             // Botão que acionou o modal

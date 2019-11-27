@@ -51,7 +51,7 @@
                         <label for="inputCNPJ" class="sr-only">CNPJ</label>
                         <input style="margin-top: 10px; width: 200px;" type="text" id="inputCNPJ" class="form-control" placeholder="CNPJ" required  maxlength="14">
                         <input type="hidden" name="idHospital" id="inputId" value="0">
-                        <strong><label style="margin-top: 20px">Enfermeiras</label></strong>
+                        <strong><label id="labelEnfermeiras" style="margin-top: 20px">Enfermeiras</label></strong>
                         <table id="tableEnfermeiras" class="table table-bordered table-hover table-striped table-sm">
                             <thead class="thead-dark">
                                 <th style="width: 50px" class="text-center">#</th>
@@ -128,6 +128,10 @@
             modal.find('#inputCNPJ').val(cnpj);
 
             carregarTableEnfermeiras(id);
+        })
+
+        $('#modalHospitalSalvar').on('hidden.bs.modal', function () {
+            window.location.reload(true);
         })
 
         // Evento com jQuery para quando o modal for aberto
@@ -208,14 +212,17 @@
         }
 
         function carregarTableEnfermeiras(hospital_id) {
+            var labelEnfermeiras = document.getElementById('labelEnfermeiras');
+            var tableEnfermeiras = document.getElementById('tableEnfermeiras');
+
+            if(hospital_id == 0) {
+                labelEnfermeiras.remove();
+                tableEnfermeiras.remove();
+                return;
+            }
 
             instance.get('hospital/'+hospital_id+'/enfermeiras')
             .then(function (res) {
-
-                var tbodyOld = document.getElementById('tbodyId');
-                if(tbodyOld != null) {
-                    tbodyOld.remove();
-                }
 
                 var tbody = document.createElement('tbody');
                 tbody.id = 'tbodyId';
@@ -234,8 +241,7 @@
 
                     tbody.appendChild(tr);
                 });
-
-                var tableEnfermeiras = document.getElementById('tableEnfermeiras');
+                
                 tableEnfermeiras.appendChild(tbody);
             })
             .catch(function (err) {

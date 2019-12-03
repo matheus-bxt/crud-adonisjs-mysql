@@ -11,21 +11,40 @@ This is the fullstack boilerplate for AdonisJs, it comes pre-configured with.
 7. Lucid ORM
 8. Migrations and seeds
 
-## Setup
+## System Requirements
 
-Use the adonis command to install the blueprint
+The only dependencies of the framework are Node.js, npm and mysql.
 
-```bash
-adonis new yardstick
+### Setup
+
+command line:
+
+```js
+npm i -g @adonisjs/cli
 ```
 
-or manually clone the repo and then run `npm install`.
+#### Script MySQL
 
+```js
+create database av2hospital
+```
 
-### Migrations
+##### Migrations
 
-Run the following command to run startup migrations.
+command line: 
 
 ```js
 adonis migration:run
 ```
+
+###### Start Server
+
+command line: 
+
+```js
+adonis serve --dev
+```
+
+###### Open Browser
+
+http://127.0.0.1:3333/

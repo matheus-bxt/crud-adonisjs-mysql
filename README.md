@@ -15,7 +15,7 @@ This is the fullstack boilerplate for AdonisJs, it comes pre-configured with.
 
 The only dependencies of the framework are Node.js, npm and mysql.
 
-### Setup
+## Setup
 
 command line:
 
@@ -23,13 +23,13 @@ command line:
 npm i -g @adonisjs/cli
 ```
 
-#### Script MySQL
+## Script MySQL
 
 ```js
 create database av2hospital
 ```
 
-##### Migrations
+## Migrations
 
 command line: 
 
@@ -37,7 +37,7 @@ command line:
 adonis migration:run
 ```
 
-###### Start Server
+## Start Server
 
 command line: 
 
@@ -45,6 +45,6 @@ command line:
 adonis serve --dev
 ```
 
-###### Open Browser
+## Open Browser
 
 http://127.0.0.1:3333/
